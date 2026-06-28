@@ -28,6 +28,7 @@ const RegisterScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [referralCode, setReferralCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -49,7 +50,7 @@ const RegisterScreen = () => {
 
         setLoading(true);
         try {
-            await register(name, email, password);
+            await register(name, email, password, referralCode);
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || error.message || 'Something went wrong';
             Alert.alert('Registration Failed', errorMessage);
@@ -134,6 +135,18 @@ const RegisterScreen = () => {
                                     color={COLORS.textMuted}
                                 />
                             </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.inputContainer}>
+                            <Ionicons name="gift-outline" size={20} color={COLORS.textMuted} style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Referral Code (Optional)"
+                                placeholderTextColor={COLORS.textMuted}
+                                value={referralCode}
+                                onChangeText={setReferralCode}
+                                autoCapitalize="characters"
+                            />
                         </View>
 
                         <PrimaryButton

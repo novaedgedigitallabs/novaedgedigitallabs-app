@@ -9,6 +9,9 @@ interface User {
     plan: 'free' | 'pro' | 'business';
     planExpiry?: string;
     isActive: boolean;
+    novaedgeCredits?: number;
+    referralCode?: string;
+    dailyLoginStreak?: number;
 }
 
 interface AuthState {
@@ -17,7 +20,7 @@ interface AuthState {
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (name: string, email: string, password: string) => Promise<void>;
+    register: (name: string, email: string, password: string, referralCode?: string) => Promise<void>;
     logout: () => Promise<void>;
     loadUser: () => Promise<void>;
     updateUser: (userData: Partial<User>) => void;
@@ -60,11 +63,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
     },
 
-    register: async (name, email, password) => {
+    register: async (name, email, password, referralCode) => {
         set({ isLoading: true, error: null });
         console.log(`[AuthStore] Attempting registration for: ${email}`);
         try {
-            const data = await authApi.register(name, email, password);
+            const data = await authApi.register(name, email, password, referralCode);
             console.log('[AuthStore] Registration successful');
             const { user, token } = data;
 

@@ -48,6 +48,29 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user'
     },
+    // Gamification & Loyalty
+    novaedgeCredits: {
+        type: Number,
+        default: 0
+    },
+    lastLoginDate: {
+        type: Date,
+        default: null
+    },
+    dailyLoginStreak: {
+        type: Number,
+        default: 0
+    },
+    referralCode: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    referredBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     createdAt: {

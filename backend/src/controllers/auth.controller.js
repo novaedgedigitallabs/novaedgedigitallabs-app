@@ -21,7 +21,7 @@ const generateToken = (user) => {
  */
 exports.register = async (req, res, next) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, referralCode } = req.body;
 
         // Basic validation
         if (!name || !email || !password) {
@@ -47,13 +47,33 @@ exports.register = async (req, res, next) => {
             });
         }
 
+        // Handle Referral
+        let referredBy = null;
+        let initialCredits = 0;
+        if (referralCode) {
+            const referrer = await User.findOne({ referralCode });
+            if (referrer) {
+                referredBy = referrer._id;
+                initialCredits = 50; // New user gets 50 points
+                // Award points to referrer
+                referrer.novaedgeCredits += 50;
+                await referrer.save();
+            }
+        }
+
+        // Generate unique referral code for this new user
+        const newReferralCode = name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '') + crypto.randomBytes(3).toString('hex').toUpperCase();
+
         // Create user
         const adminEmail = process.env.ADMIN_EMAIL;
         const user = await User.create({
             name,
             email,
             password,
-            role: adminEmail && email === adminEmail ? 'admin' : 'user'
+            role: adminEmail && email === adminEmail ? 'admin' : 'user',
+            referralCode: newReferralCode,
+            referredBy,
+            novaedgeCredits: initialCredits
         });
 
         const token = generateToken(user);
@@ -101,6 +121,28 @@ exports.login = async (req, res, next) => {
         const adminEmail = process.env.ADMIN_EMAIL;
         if (adminEmail && user.email === adminEmail && user.role !== 'admin') {
             user.role = 'admin';
+            await user.save();
+        }
+
+        // Gamification: Daily Login Bonus
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Start of today
+
+        if (!user.lastLoginDate || user.lastLoginDate < today) {
+            // Check for streak
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            if (user.lastLoginDate && user.lastLoginDate >= yesterday && user.lastLoginDate < today) {
+                user.dailyLoginStreak += 1;
+            } else {
+                user.dailyLoginStreak = 1;
+            }
+
+            // Base 10 points + 5 points for each day of streak (cap at 50 bonus)
+            const bonus = Math.min(50, user.dailyLoginStreak * 5);
+            user.novaedgeCredits += (10 + bonus);
+            user.lastLoginDate = new Date();
             await user.save();
         }
 

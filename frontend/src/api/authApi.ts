@@ -6,8 +6,8 @@ export const authApi = {
         return response.data;
     },
 
-    register: async (name: string, email: string, password: string) => {
-        const response = await axiosInstance.post('/auth/register', { name, email, password });
+    register: async (name: string, email: string, password: string, referralCode?: string) => {
+        const response = await axiosInstance.post('/auth/register', { name, email, password, referralCode });
         return response.data;
     },
 
