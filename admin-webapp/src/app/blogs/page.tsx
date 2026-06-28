@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, FileJson, Trash2, Edit, X, RefreshCw, Eye, CheckCircle2, AlertCircle, Calendar, Clock, User } from "lucide-react";
+import { Plus, Search, FileJson, Trash2, Edit, X, RefreshCw, Eye, CheckCircle2, AlertCircle, Calendar, Clock, User, Newspaper } from "lucide-react";
 import { toast } from "sonner";
 import { Topbar } from "@/components/layout/Topbar";
 
@@ -113,7 +113,7 @@ export default function BlogsPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Topbar title="Community Feed / Blogs" />
+            <Topbar />
             
             <main className="p-4 lg:p-8 pt-24 lg:pt-8 w-full max-w-7xl mx-auto space-y-6">
                 
