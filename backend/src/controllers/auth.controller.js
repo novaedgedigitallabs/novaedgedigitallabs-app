@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const User = require('../models/User.model');
 const ToolUsage = require('../models/ToolUsage.model');
 const Subscription = require('../models/Subscription.model');
+const sendEmail = require('../utils/sendEmail');
 
 // Generate JWT Token
 const generateToken = (user) => {
@@ -249,15 +250,43 @@ exports.forgotPassword = async (req, res, next) => {
 
         await user.save({ validateBeforeSave: false });
 
-        // In a real app, send email here. In this app, we'll return the token in dev mode
-        // and just success in prod
-        const isDev = process.env.NODE_ENV === 'development';
-
-        res.status(200).json({
-            success: true,
-            message: 'Password reset link generated. Check your email.',
-            resetToken: isDev ? resetToken : undefined // Return token only in dev for testing
-        });
+        // Send the email
+        const frontendUrl = process.env.FRONTEND_URL || 'https://novaedgedigitallabs.in';
+        const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
+        
+        const message = `You requested a password reset. Please click this link to reset your password: \n\n ${resetUrl}\n\nIf you did not request this, you can ignore this email.`;
+        const htmlMessage = `
+            <h2>Password Reset Request</h2>
+            <p>You requested a password reset for your NovaEdge Digital Labs account.</p>
+            <p>Please click the link below to reset your password:</p>
+            <a href="${resetUrl}" target="_blank" style="display:inline-block;padding:10px 20px;background-color:#007bff;color:#fff;text-decoration:none;border-radius:5px;">Reset Password</a>
+            <p>If you didn't request this, you can safely ignore this email.</p>
+        `;
+        
+        try {
+            await sendEmail({
+                email: user.email,
+                subject: 'Password Reset - NovaEdge Digital Labs',
+                message,
+                html: htmlMessage
+            });
+            
+            res.status(200).json({
+                success: true,
+                message: 'Password reset link has been sent to your email.',
+                resetToken: process.env.NODE_ENV === 'development' ? resetToken : undefined
+            });
+        } catch (emailError) {
+            console.error('Email send error:', emailError);
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpires = undefined;
+            await user.save({ validateBeforeSave: false });
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Email could not be sent. Please try again later.'
+            });
+        }
     } catch (error) {
         next(error);
     }
