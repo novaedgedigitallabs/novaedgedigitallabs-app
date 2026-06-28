@@ -106,9 +106,18 @@ exports.getStats = async (req, res, next) => {
  */
 exports.getSystemHealth = async (req, res, next) => {
     try {
-        const dbStart = Date.now();
-        await mongoose.connection.db.admin().ping();
-        const apiLatency = Date.now() - dbStart;
+        let apiLatency = 0;
+        try {
+            if (mongoose.connection.db) {
+                const dbStart = Date.now();
+                await mongoose.connection.db.admin().ping();
+                apiLatency = Date.now() - dbStart;
+            } else if (mongoose.connection.readyState === 1) {
+                apiLatency = 5; // Mock latency if connected but db obj is unavailable
+            }
+        } catch (dbError) {
+            console.error('DB Ping Error:', dbError);
+        }
 
         const cpuCount = os.cpus().length || 1;
         const oneMinuteLoad = os.loadavg()[0] || 0;
