@@ -254,12 +254,16 @@ exports.forgotPassword = async (req, res, next) => {
         const frontendUrl = process.env.FRONTEND_URL || 'https://novaedgedigitallabs.in';
         const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
         
-        const message = `You requested a password reset. Please click this link to reset your password: \n\n ${resetUrl}\n\nIf you did not request this, you can ignore this email.`;
+        const message = `You requested a password reset. Please click this link to reset your password: \n\n ${resetUrl}\n\nOr if you are using the Mobile App, use this Reset Token: ${resetToken}\n\nIf you did not request this, you can ignore this email.`;
         const htmlMessage = `
             <h2>Password Reset Request</h2>
             <p>You requested a password reset for your NovaEdge Digital Labs account.</p>
-            <p>Please click the link below to reset your password:</p>
+            <p>If you are using our website, click the button below:</p>
             <a href="${resetUrl}" target="_blank" style="display:inline-block;padding:10px 20px;background-color:#007bff;color:#fff;text-decoration:none;border-radius:5px;">Reset Password</a>
+            <p><br>If you are using the Mobile App, copy and paste this Reset Token:</p>
+            <div style="padding: 10px; background-color: #f1f1f1; word-break: break-all; border-radius: 5px;">
+                <strong>${resetToken}</strong>
+            </div>
             <p>If you didn't request this, you can safely ignore this email.</p>
         `;
         
