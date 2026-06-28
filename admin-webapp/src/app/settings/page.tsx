@@ -33,6 +33,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type SettingsTab = "General" | "Security" | "Notifications" | "Team Members" | "Cloud Sync" | "API Keys" | "Database" | "Appearance";
 
@@ -568,7 +569,7 @@ export default function SettingsPage() {
                                                     <span className="flex items-center gap-1"><Activity className="w-3 h-3" /> {key.monthlyCalls}/{key.monthlyLimit} calls</span>
                                                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Created {new Date(key.createdAt).toLocaleDateString()}</span>
                                                 </div>
-                                                <button type="button" onClick={() => router.push('/analytics')} className="text-[10px] font-bold text-primary hover:underline">View Analytics</button>
+                                                <Link href={`/analytics?key=${key._id}`} className="text-[10px] font-bold text-primary hover:underline">View Analytics</Link>
                                             </div>
                                         </div>
                                     ))}
