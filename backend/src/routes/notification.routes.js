@@ -6,7 +6,8 @@ const {
     markAsRead, 
     sendPushNotification 
 } = require('../controllers/notification.controller');
-const { protect, authorize } = require('../middleware/auth.middleware');
+const { protect } = require('../middleware/auth.middleware');
+const { checkAdmin } = require('../middleware/admin.middleware');
 
 // Routes accessible to all authenticated users
 router.use(protect);
@@ -16,6 +17,6 @@ router.get('/', getNotifications);
 router.put('/:id/read', markAsRead);
 
 // Routes accessible only to admins
-router.post('/send', authorize('admin'), sendPushNotification);
+router.post('/send', checkAdmin, sendPushNotification);
 
 module.exports = router;
