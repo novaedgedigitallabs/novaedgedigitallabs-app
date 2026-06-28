@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const miniAppController = require('../controllers/miniApp.controller');
-const { protect, authorize } = require('../middleware/auth.middleware');
+const { protect } = require('../middleware/auth.middleware');
+const { checkAdmin } = require('../middleware/admin.middleware');
 
 router.get('/', miniAppController.getActiveMiniApps);
-router.post('/', protect, authorize('admin'), miniAppController.createMiniApp);
-router.put('/:id', protect, authorize('admin'), miniAppController.updateMiniApp);
+router.post('/', protect, checkAdmin, miniAppController.createMiniApp);
+router.put('/:id', protect, checkAdmin, miniAppController.updateMiniApp);
 
 module.exports = router;
