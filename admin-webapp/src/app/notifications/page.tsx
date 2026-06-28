@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Send, Bell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 
 export default function NotificationsPage() {
     const [title, setTitle] = useState("");
@@ -66,7 +67,8 @@ export default function NotificationsPage() {
     };
 
     return (
-        <div className="p-6 md:p-8 max-w-4xl mx-auto">
+        <AdminLayout>
+            <div className="p-6 md:p-8 max-w-4xl mx-auto">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-bold gradient-text">Push Notifications</h1>
@@ -171,6 +173,7 @@ export default function NotificationsPage() {
                     </p>
                 </div>
             </div>
-        </div>
+            </div>
+        </AdminLayout>
     );
 }

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Search, FileJson, Trash2, Edit, X, RefreshCw, Eye, CheckCircle2, AlertCircle, Calendar, Clock, User, Newspaper } from "lucide-react";
 import { toast } from "sonner";
-import { Topbar } from "@/components/layout/Topbar";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 
 interface Blog {
     _id: string;
@@ -112,10 +112,8 @@ export default function BlogsPage() {
     );
 
     return (
-        <div className="min-h-screen bg-background">
-            <Topbar />
-            
-            <main className="p-4 lg:p-8 pt-24 lg:pt-8 w-full max-w-7xl mx-auto space-y-6">
+        <AdminLayout>
+            <div className="w-full max-w-7xl mx-auto space-y-6">
                 
                 {/* Header Section */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -233,7 +231,7 @@ export default function BlogsPage() {
                         </AnimatePresence>
                     </div>
                 )}
-            </main>
+            </div>
 
             {/* Create JSON Modal */}
             <AnimatePresence>
@@ -316,6 +314,6 @@ export default function BlogsPage() {
                     </div>
                 )}
             </AnimatePresence>
-        </div>
+        </AdminLayout>
     );
 }

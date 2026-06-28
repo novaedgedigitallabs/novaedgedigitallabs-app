@@ -67,6 +67,17 @@ const ProfileScreen = ({ navigation }: any) => {
                 </View>
 
                 <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>My Workspace</Text>
+                    <MenuItem
+                        icon="briefcase-outline"
+                        title="Workspace Overview"
+                        subtitle="View your active projects and tickets"
+                        onPress={() => navigation.navigate('MyWorkspace')}
+                        color={COLORS.primary}
+                    />
+                </View>
+
+                <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Account Settings</Text>
                     <MenuItem
                         icon="person-outline"

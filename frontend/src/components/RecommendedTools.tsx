@@ -7,6 +7,64 @@ import { useNavigation } from '@react-navigation/native';
 import affiliateApi, { AffiliateLink } from '../api/affiliateApi';
 import { COLORS } from '../constants/colors';
 
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+
+const ToolCardItem = ({ tool, onPress }: { tool: AffiliateLink, onPress: (tool: AffiliateLink) => void }) => {
+    const scale = useSharedValue(1);
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ scale: scale.value }]
+        };
+    });
+
+    const handlePressIn = () => {
+        scale.value = withSpring(0.95, { damping: 15, stiffness: 200 });
+    };
+
+    const handlePressOut = () => {
+        scale.value = withSpring(1, { damping: 15, stiffness: 200 });
+    };
+
+    return (
+        <Animated.View style={[styles.cardWrapper, animatedStyle]}>
+            <TouchableOpacity
+                onPress={() => onPress(tool)}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+                activeOpacity={1}
+                style={{ flex: 1 }}
+            >
+                <BlurView intensity={30} tint="dark" style={styles.card}>
+                    <View style={styles.logoContainer}>
+                        <Image source={{ uri: tool.logo }} style={styles.logo} />
+                    </View>
+
+                    <Text style={styles.toolName}>{tool.name}</Text>
+                    <Text style={styles.toolDesc} numberOfLines={1}>{tool.description}</Text>
+
+                    <View style={styles.ratingContainer}>
+                        <Ionicons name="star" size={12} color="#FFD700" />
+                        <Text style={styles.ratingText}>{tool.rating.toFixed(1)}</Text>
+                        <View style={styles.categoryBadge}>
+                            <Text style={styles.categoryText}>{tool.category}</Text>
+                        </View>
+                    </View>
+
+                    <LinearGradient
+                        colors={['#00f2fe', '#4facfe']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.button}
+                    >
+                        <Text style={styles.buttonText}>Get Started</Text>
+                    </LinearGradient>
+                </BlurView>
+            </TouchableOpacity>
+        </Animated.View>
+    );
+};
+
 const RecommendedTools = () => {
     const navigation = useNavigation<any>();
     const [tools, setTools] = useState<AffiliateLink[]>([]);
@@ -58,38 +116,7 @@ const RecommendedTools = () => {
                 contentContainerStyle={styles.scrollContent}
             >
                 {tools.map((tool) => (
-                    <TouchableOpacity
-                        key={tool._id}
-                        style={styles.cardWrapper}
-                        onPress={() => handlePress(tool)}
-                        activeOpacity={0.8}
-                    >
-                        <BlurView intensity={30} tint="dark" style={styles.card}>
-                            <View style={styles.logoContainer}>
-                                <Image source={{ uri: tool.logo }} style={styles.logo} />
-                            </View>
-
-                            <Text style={styles.toolName}>{tool.name}</Text>
-                            <Text style={styles.toolDesc} numberOfLines={1}>{tool.description}</Text>
-
-                            <View style={styles.ratingContainer}>
-                                <Ionicons name="star" size={12} color="#FFD700" />
-                                <Text style={styles.ratingText}>{tool.rating.toFixed(1)}</Text>
-                                <View style={styles.categoryBadge}>
-                                    <Text style={styles.categoryText}>{tool.category}</Text>
-                                </View>
-                            </View>
-
-                            <LinearGradient
-                                colors={['#00f2fe', '#4facfe']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 0 }}
-                                style={styles.button}
-                            >
-                                <Text style={styles.buttonText}>Get Started</Text>
-                            </LinearGradient>
-                        </BlurView>
-                    </TouchableOpacity>
+                    <ToolCardItem key={tool._id} tool={tool} onPress={handlePress} />
                 ))}
             </ScrollView>
         </View>

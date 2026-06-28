@@ -1,6 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, StyleProp } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, StyleProp, Pressable } from 'react-native';
 import { COLORS } from '../constants/colors';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 
 interface PrimaryButtonProps {
     title: string;
@@ -19,29 +20,53 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({
     loading = false,
     disabled = false,
     style,
+    containerStyle,
     textStyle,
     icon
 }) => {
+    const scale = useSharedValue(1);
+    
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ scale: scale.value }]
+        };
+    });
+
+    const handlePressIn = () => {
+        if (!disabled && !loading) {
+            scale.value = withSpring(0.95, { damping: 15, stiffness: 200 });
+        }
+    };
+
+    const handlePressOut = () => {
+        if (!disabled && !loading) {
+            scale.value = withSpring(1, { damping: 15, stiffness: 200 });
+        }
+    };
+
     return (
-        <TouchableOpacity
-            style={[
-                styles.button,
-                disabled && styles.disabled,
-                style
-            ]}
-            onPress={onPress}
-            disabled={disabled || loading}
-            activeOpacity={0.8}
-        >
-            {loading ? (
-                <ActivityIndicator color={COLORS.white} />
-            ) : (
-                <>
-                    {icon}
-                    <Text style={[styles.text, textStyle]}>{title}</Text>
-                </>
-            )}
-        </TouchableOpacity>
+        <Animated.View style={[animatedStyle, containerStyle]}>
+            <Pressable
+                style={({ pressed }) => [
+                    styles.button,
+                    (disabled || loading) && styles.disabled,
+                    style
+                ]}
+                onPress={onPress}
+                disabled={disabled || loading}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+            >
+                {loading ? (
+                    <ActivityIndicator color={COLORS.white} />
+                ) : (
+                    <>
+                        {icon}
+                        <Text style={[styles.text, textStyle]}>{title}</Text>
+                    </>
+                )}
+            </Pressable>
+        </Animated.View>
     );
 };
 
