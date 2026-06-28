@@ -27,8 +27,9 @@ export default function NotificationsPage() {
             if (!token) throw new Error("No authentication token found");
 
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://app.novaedgedigitallabs.in";
+            const baseUrl = apiUrl.replace(/\/api$/, '');
             
-            const response = await fetch(`${apiUrl}/api/notifications/send`, {
+            const response = await fetch(`${baseUrl}/api/notifications/send`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

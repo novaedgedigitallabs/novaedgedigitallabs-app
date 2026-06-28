@@ -19,7 +19,8 @@ import {
     GraduationCap,
     ClipboardCheck,
     FolderKanban,
-    BellRing
+    BellRing,
+    Newspaper
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -37,6 +38,7 @@ const NAV_ITEMS = [
     { name: "Domain", href: "/domain", icon: Globe },
     { name: "Digital Store", href: "/store", icon: ShoppingBag },
     { name: "Notifications", href: "/notifications", icon: BellRing },
+    { name: "Blogs", href: "/blogs", icon: Newspaper },
     { name: "Settings", href: "/settings", icon: Settings },
 ];
 
