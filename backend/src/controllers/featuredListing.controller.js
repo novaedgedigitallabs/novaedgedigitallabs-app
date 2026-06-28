@@ -1,6 +1,7 @@
 const FeaturedListing = require('../models/FeaturedListing.model');
 const BusinessInquiry = require('../models/BusinessInquiry.model');
 const Razorpay = require('razorpay');
+const sendEmail = require('../utils/sendEmail');
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -43,8 +44,26 @@ exports.submitInquiry = async (req, res) => {
             message
         });
 
-        // TODO: Send email notification to admin
-        // For now, we simulate success
+        // Send email notification to admin
+        const adminEmail = process.env.ADMIN_EMAIL;
+        if (adminEmail) {
+            const emailHtml = `
+                <h2>New Business Inquiry for Featured Slot</h2>
+                <p><strong>Business Name:</strong> ${businessName}</p>
+                <p><strong>Owner Name:</strong> ${ownerName}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Phone:</strong> ${phone}</p>
+                <p><strong>Category:</strong> ${category}</p>
+                <p><strong>Message:</strong></p>
+                <blockquote style="border-left: 4px solid #ccc; padding-left: 10px;">${message}</blockquote>
+            `;
+            await sendEmail({
+                email: adminEmail,
+                subject: `New Business Inquiry from ${businessName}`,
+                html: emailHtml
+            });
+        }
+        
         console.log(`New Inquiry from ${businessName}. Email: ${email}`);
 
         res.status(201).json({

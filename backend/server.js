@@ -49,6 +49,7 @@ const courseRoutes = require('./src/routes/course.routes');
 const developerRoutes = require('./src/routes/developer.routes');
 const adminRoutes = require('./src/routes/admin.routes');
 const apiV1Routes = require('./src/routes/apiV1.routes');
+const miniAppRoutes = require('./src/routes/miniApp.routes');
 const { toolsRateLimit, authRateLimit } = require('./src/middleware/rateLimit.middleware');
 
 app.use('/api/auth', authRateLimit, authRoutes);
@@ -65,6 +66,7 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/developer', developerRoutes);
 app.use('/api/v1', apiV1Routes);
+app.use('/api/miniapp', miniAppRoutes);
 
 // Mock dynamic route mounting
 app.get('/api', (req, res) => {

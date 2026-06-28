@@ -16,6 +16,7 @@ const HomeNavigator = () => {
         >
             <Stack.Screen name="HomeMain" component={HomeScreen} />
             <Stack.Screen name="BusinessInquiry" component={BusinessInquiryScreen} />
+            <Stack.Screen name="MiniAppScreen" component={require('../screens/MiniAppScreen').default} />
         </Stack.Navigator>
     );
 };

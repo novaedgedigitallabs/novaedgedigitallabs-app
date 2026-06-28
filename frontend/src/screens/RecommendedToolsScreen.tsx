@@ -101,6 +101,7 @@ const RecommendedToolsScreen = ({ navigation }: any) => {
                 <FlashList
                     data={tools}
                     renderItem={renderToolItem}
+                    // @ts-ignore
                     estimatedItemSize={140}
                     keyExtractor={(item) => item._id}
                     contentContainerStyle={{ padding: 20, paddingBottom: 40 }}

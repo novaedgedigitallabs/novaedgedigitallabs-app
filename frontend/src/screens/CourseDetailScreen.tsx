@@ -17,6 +17,8 @@ import { COLORS, SPACING, SHADOWS, TYPOGRAPHY } from '../constants/theme';
 import courseApi, { Course, Lecture } from '../api/courseApi';
 import { formatCurrency, getImageUrl } from '../utils/helpers';
 import PrimaryButton from '../components/PrimaryButton';
+import RazorpayCheckout from 'react-native-razorpay';
+import { useAuthStore } from '../store/authStore';
 
 
 const { width } = Dimensions.get('window');
@@ -25,6 +27,7 @@ const CourseDetailScreen = () => {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
     const { courseId } = route.params;
+    const user = useAuthStore((state) => state.user);
 
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
@@ -49,22 +52,50 @@ const CourseDetailScreen = () => {
     }, [courseId]);
 
     const handleEnroll = async () => {
+        if (!user) {
+            Alert.alert('Authentication Required', 'Please login to enroll in courses.', [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Login', onPress: () => navigation.navigate('Profile') }
+            ]);
+            return;
+        }
+
         setEnrolling(true);
         try {
             const response = await courseApi.enrollInCourse(courseId);
             if (response.success) {
-                // Mocking Razorpay payment verification
-                // In a real app, you'd open the Razorpay checkout here
-                const verifyResponse = await courseApi.verifyPayment({
-                    razorpay_order_id: response.data.id,
-                    razorpay_payment_id: 'pay_mock_' + Date.now(),
-                    razorpay_signature: 'signature_mock'
-                });
+                const order = response.data;
+                const options = {
+                    description: course?.title || 'Course Enrollment',
+                    image: 'https://novaedgedigitallabs.tech/logo.png',
+                    currency: 'INR',
+                    key: 'rzp_test_dummy', // Replace with real env key
+                    amount: course?.price ? course.price * 100 : 0,
+                    name: 'NovaEdge Digital Labs',
+                    order_id: order.id,
+                    prefill: {
+                        email: user.email,
+                        contact: '',
+                        name: user.name
+                    },
+                    theme: { color: COLORS.primary }
+                };
 
-                if (verifyResponse.success) {
-                    Alert.alert('Success', 'You have successfully enrolled in this course!');
-                    fetchCourseDetails(); // Refresh to show lectures
-                }
+                RazorpayCheckout.open(options).then(async (data: any) => {
+                    const verifyResponse = await courseApi.verifyPayment({
+                        razorpay_order_id: data.razorpay_order_id,
+                        razorpay_payment_id: data.razorpay_payment_id,
+                        razorpay_signature: data.razorpay_signature
+                    });
+
+                    if (verifyResponse.success) {
+                        Alert.alert('Success', 'You have successfully enrolled in this course!');
+                        fetchCourseDetails(); // Refresh to show lectures
+                    }
+                }).catch((error: any) => {
+                    console.log('Payment failed:', error);
+                    Alert.alert('Payment Failed', error.description || 'Transaction cancelled');
+                });
             }
         } catch (error: any) {
             console.error('Enrollment error:', error);

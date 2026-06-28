@@ -15,7 +15,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "tech.novaedgedigitallabs.app",
+      "package": "in.novaedgedigitallabs.tech",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",

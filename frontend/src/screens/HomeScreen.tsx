@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../constants/colors';
 import ThemeWrapper from '../components/ThemeWrapper';
 import FeaturedPartners from '../components/FeaturedPartners';
+import miniAppApi, { MiniApp } from '../api/miniAppApi';
 
 const { width } = Dimensions.get('window');
 
@@ -15,6 +16,18 @@ const HomeScreen: React.FC<any> = ({ navigation }) => {
         { id: 'gst', name: 'GST Calculator', icon: 'calculator', color: COLORS.info, routeName: 'GSTCalculator' },
         { id: 'emi', name: 'EMI Calculator', icon: 'stats-chart', color: COLORS.warning, routeName: 'EMICalculator' },
     ];
+
+    const [miniApps, setMiniApps] = useState<MiniApp[]>([]);
+
+    useEffect(() => {
+        const fetchMiniApps = async () => {
+            const res = await miniAppApi.getAllActive();
+            if (res && res.success) {
+                setMiniApps(res.data);
+            }
+        };
+        fetchMiniApps();
+    }, []);
 
     const stats = [
         { label: 'Projects', value: '500+', icon: 'rocket-outline' },
@@ -81,6 +94,33 @@ const HomeScreen: React.FC<any> = ({ navigation }) => {
                         </View>
                     ))}
                 </View>
+
+                {/* Dynamic Mini Apps */}
+                {miniApps.length > 0 && (
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionTitle}>Featured Games & Apps</Text>
+                        </View>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.servicesScroll} contentContainerStyle={{ paddingRight: 20 }}>
+                            {miniApps.map((app) => (
+                                <TouchableOpacity
+                                    key={app._id}
+                                    style={[styles.miniAppCard, COLORS.glass]}
+                                    onPress={() => navigation.navigate('MiniAppScreen', { url: app.url, title: app.title })}
+                                >
+                                    {app.thumbnail ? (
+                                        <Image source={{ uri: app.thumbnail }} style={styles.miniAppThumbnail} />
+                                    ) : (
+                                        <View style={styles.miniAppIconPlaceholder}>
+                                            <Ionicons name="game-controller-outline" size={32} color={COLORS.primary} />
+                                        </View>
+                                    )}
+                                    <Text style={styles.miniAppTitle}>{app.title}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </View>
+                )}
 
                 {/* Quick Tools Grid */}
                 <View style={styles.section}>
@@ -373,6 +413,34 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: COLORS.text,
         marginBottom: 10,
+    },
+    miniAppCard: {
+        width: 140,
+        padding: 15,
+        borderRadius: 16,
+        marginRight: 15,
+        alignItems: 'center',
+    },
+    miniAppThumbnail: {
+        width: 60,
+        height: 60,
+        borderRadius: 12,
+        marginBottom: 10,
+    },
+    miniAppIconPlaceholder: {
+        width: 60,
+        height: 60,
+        borderRadius: 12,
+        backgroundColor: COLORS.primary + '10',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    miniAppTitle: {
+        color: COLORS.text,
+        fontSize: 14,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
     serviceDesc: {
         color: COLORS.textMuted,

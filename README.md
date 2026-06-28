@@ -32,3 +32,6 @@ This is a monorepo containing:
 ## 📄 Documentation
 
 For detailed deployment and admin instructions, see [deployment.md](./deployment.md).
+
+Google Play Store: https://play.google.com/store/apps/details?id=in.novaedgedigitallabs.tech
+Google Play Store Beta: https://play.google.com/apps/testing/in.novaedgedigitallabs.tech

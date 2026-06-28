@@ -39,3 +39,6 @@ coverage
 
 # os x
 .DS_Store
+
+# Firebase Secrets
+serviceAccountKey.json

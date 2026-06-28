@@ -6,6 +6,8 @@ import ThemeWrapper from '../components/ThemeWrapper';
 import { marketplaceApi } from '../api/marketplaceApi';
 import PrimaryButton from '../components/PrimaryButton';
 import { formatCurrency } from '../utils/helpers';
+import RazorpayCheckout from 'react-native-razorpay';
+import { useAuthStore } from '../store/authStore';
 
 const tiers = [
     {
@@ -35,6 +37,7 @@ const PostJobScreen = ({ navigation }: any) => {
     const [step, setStep] = useState(1);
     const [selectedTier, setSelectedTier] = useState<any>(null);
     const [loading, setLoading] = useState(false);
+    const user = useAuthStore((state) => state.user);
 
     // Form States
     const [title, setTitle] = useState('');
@@ -47,6 +50,14 @@ const PostJobScreen = ({ navigation }: any) => {
     const [description, setDescription] = useState('');
 
     const handlePayment = async () => {
+        if (!user) {
+            Alert.alert('Authentication Required', 'Please login to post a job.', [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Login', onPress: () => navigation.navigate('Profile') }
+            ]);
+            return;
+        }
+
         if (!selectedTier || !title || !location || !description) {
             Alert.alert('Error', 'Please fill in all essential fields');
             return;
@@ -57,36 +68,55 @@ const PostJobScreen = ({ navigation }: any) => {
             // 1. Create order
             const order = await marketplaceApi.createJobOrder(selectedTier.id);
 
-            // 2. Razorpay handle (Mock for now, assume success)
-            // Real implementation would use Razorpay Checkout module
-
-            const razorpayResponse = {
-                razorpayOrderId: order.orderId,
-                razorpayPaymentId: 'pay_mock_' + Date.now(),
-                razorpaySignature: 'sig_mock_' + Date.now(),
+            const options = {
+                description: `Job Listing: ${title} (${selectedTier.id})`,
+                image: 'https://novaedgedigitallabs.tech/logo.png',
+                currency: 'INR',
+                key: 'rzp_test_dummy', // Replace with real env key
+                amount: selectedTier.price * 100,
+                name: 'NovaEdge Digital Labs',
+                order_id: order.orderId,
+                prefill: {
+                    email: user.email,
+                    contact: '',
+                    name: user.name
+                },
+                theme: { color: COLORS.primary }
             };
 
-            const jobData = {
-                title,
-                location,
-                jobType,
-                salaryRange: { min: Number(minSalary), max: Number(maxSalary) },
-                skillsRequired: skills.split(',').map(s => s.trim()),
-                experienceLevel: experience,
-                description,
-                listingType: selectedTier.id
-            };
+            RazorpayCheckout.open(options).then(async (data: any) => {
+                const razorpayResponse = {
+                    razorpayOrderId: data.razorpay_order_id,
+                    razorpayPaymentId: data.razorpay_payment_id,
+                    razorpaySignature: data.razorpay_signature,
+                };
 
-            await marketplaceApi.publishJob({
-                ...razorpayResponse,
-                jobData
+                const jobData = {
+                    title,
+                    location,
+                    jobType,
+                    salaryRange: { min: Number(minSalary), max: Number(maxSalary) },
+                    skillsRequired: skills.split(',').map(s => s.trim()),
+                    experienceLevel: experience,
+                    description,
+                    listingType: selectedTier.id
+                };
+
+                await marketplaceApi.publishJob({
+                    ...razorpayResponse,
+                    jobData
+                });
+
+                Alert.alert('Success', 'Your job has been posted!', [
+                    { text: 'Great!', onPress: () => navigation.navigate('JobFeed') }
+                ]);
+            }).catch((error: any) => {
+                console.log('Payment failed:', error);
+                Alert.alert('Payment Failed', error.description || 'Transaction cancelled');
             });
-
-            Alert.alert('Success', 'Your job has been posted!', [
-                { text: 'Great!', onPress: () => navigation.navigate('JobFeed') }
-            ]);
         } catch (error: any) {
-            Alert.alert('Payment Failed', error.message);
+            console.error('Payment error:', error);
+            Alert.alert('Payment Error', error.message || 'An error occurred');
         } finally {
             setLoading(false);
         }

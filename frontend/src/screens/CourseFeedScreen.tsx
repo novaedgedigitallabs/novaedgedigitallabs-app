@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     },
     instructorName: {
         fontSize: 14,
-        color: COLORS.text.secondary,
+        color: COLORS.textSecondary,
     },
     ratingRow: {
         flexDirection: 'row',
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        color: COLORS.text.secondary,
+        color: COLORS.textSecondary,
         marginTop: SPACING.md,
     },
 });

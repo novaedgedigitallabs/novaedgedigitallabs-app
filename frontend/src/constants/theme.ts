@@ -2,6 +2,12 @@ import theme from './theme.json';
 
 export const COLORS = {
     ...theme,
+    surface: theme.card,
+    textPrimary: theme.text,
+    textSecondary: theme.textLight,
+    textMuted: theme.textMuted,
+    textLight: theme.textLight,
+    textWhite: theme.white,
 };
 
 export const SPACING = {

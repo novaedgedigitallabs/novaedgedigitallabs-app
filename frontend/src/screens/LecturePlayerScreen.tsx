@@ -144,7 +144,7 @@ const LecturePlayerScreen = () => {
             }
         };
 
-        if (player.status === 'readyToPlay' || player.status === 'playing') {
+        if ((player as any).status === 'readyToPlay' || (player as any).status === 'playing' || (player as any).playing) {
             console.log('expo-video: Player already ready');
             setStatus('ready');
         }
@@ -218,12 +218,12 @@ const LecturePlayerScreen = () => {
                                     console.log('YouTube: Ready event');
                                     setStatus('ready');
                                 }}
-                                onChangeState={(state) => {
+                                onChangeState={(state: string) => {
                                     console.log('YouTube: State changed:', state);
                                     if (state === 'playing') setStatus('ready');
                                     if (state === 'buffering') setStatus('loading');
                                 }}
-                                onError={(e) => {
+                                onError={(e: any) => {
                                     console.error('YouTube: Playback error:', e);
                                     setStatus('error');
                                     setError('YouTube playback error: ' + JSON.stringify(e));
@@ -237,6 +237,7 @@ const LecturePlayerScreen = () => {
                         style={{ width: currentWidth, height: videoHeight, backgroundColor: '#111' }}
                         nativeControls={true}
                         contentFit="contain"
+                        // @ts-ignore
                         onReadyForDisplay={() => {
                             console.log('expo-video: Ready for display');
                             setStatus('ready');
@@ -352,6 +353,12 @@ const styles = StyleSheet.create({
     },
     youtubeContainer: {
         backgroundColor: '#000',
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#111',
     },
     loaderOverlay: {
         ...StyleSheet.absoluteFillObject,

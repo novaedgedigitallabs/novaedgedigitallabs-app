@@ -90,10 +90,10 @@ const ToolsScreen: React.FC<any> = ({ navigation }) => {
             </View>
 
             <View style={styles.listContainer}>
-                {/* @ts-ignore */}
                 <FlashList
                     data={filteredTools}
                     renderItem={renderToolItem}
+                    // @ts-ignore
                     estimatedItemSize={100}
                     keyExtractor={(item) => item.id}
                     ListHeaderComponent={RecommendedTools}

@@ -7,10 +7,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { marketplaceApi } from '../api/marketplaceApi';
 import PrimaryButton from '../components/PrimaryButton';
 import { formatCurrency } from '../utils/helpers';
+import RazorpayCheckout from 'react-native-razorpay';
+import { useAuthStore } from '../store/authStore';
 
 const PremiumUpgradeScreen = ({ navigation }: any) => {
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState<any>(null);
+    const user = useAuthStore((state) => state.user);
 
     useEffect(() => {
         const fetchStatus = async () => {
@@ -21,23 +24,52 @@ const PremiumUpgradeScreen = ({ navigation }: any) => {
     }, []);
 
     const handleUpgrade = async () => {
+        if (!user) {
+            Alert.alert('Authentication Required', 'Please login to upgrade your account.', [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Login', onPress: () => navigation.navigate('Profile') }
+            ]);
+            return;
+        }
+
         setLoading(true);
         try {
             const order = await marketplaceApi.createPremiumSeekerOrder();
 
-            // Razorpay Checkou Simulation
-            const razorpayResponse = {
-                razorpayOrderId: order.orderId,
-                razorpayPaymentId: 'pay_premium_mock_' + Date.now(),
-                razorpaySignature: 'sig_mock_' + Date.now(),
+            const options = {
+                description: 'NovaEdge Premium Upgrade',
+                image: 'https://novaedgedigitallabs.tech/logo.png',
+                currency: 'INR',
+                key: 'rzp_test_dummy', // Replace with real env key
+                amount: 199 * 100,
+                name: 'NovaEdge Digital Labs',
+                order_id: order.orderId,
+                prefill: {
+                    email: user.email,
+                    contact: '',
+                    name: user.name
+                },
+                theme: { color: COLORS.primary }
             };
 
-            await marketplaceApi.verifyPremiumSeeker(razorpayResponse);
-            Alert.alert('Welcome to Premium!', 'Your profile now has priority placement and a verified badge.', [
-                { text: 'Awesome', onPress: () => navigation.goBack() }
-            ]);
+            RazorpayCheckout.open(options).then(async (data: any) => {
+                const razorpayResponse = {
+                    razorpayOrderId: data.razorpay_order_id,
+                    razorpayPaymentId: data.razorpay_payment_id,
+                    razorpaySignature: data.razorpay_signature,
+                };
+
+                await marketplaceApi.verifyPremiumSeeker(razorpayResponse);
+                Alert.alert('Welcome to Premium!', 'Your profile now has priority placement and a verified badge.', [
+                    { text: 'Awesome', onPress: () => navigation.goBack() }
+                ]);
+            }).catch((error: any) => {
+                console.log('Payment failed:', error);
+                Alert.alert('Payment Failed', error.description || 'Transaction cancelled');
+            });
         } catch (error: any) {
-            Alert.alert('Payment Failed', error.message);
+            console.error('Upgrade error:', error);
+            Alert.alert('Payment Error', error.message || 'Failed to initiate upgrade');
         } finally {
             setLoading(false);
         }

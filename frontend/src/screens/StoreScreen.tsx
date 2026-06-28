@@ -132,6 +132,7 @@ const StoreScreen = ({ navigation }: any) => {
                 <FlashList
                     data={products}
                     renderItem={renderProduct}
+                    // @ts-ignore
                     estimatedItemSize={250}
                     numColumns={2}
                     contentContainerStyle={styles.productList}
