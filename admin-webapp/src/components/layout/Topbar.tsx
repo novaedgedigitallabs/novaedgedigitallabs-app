@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { Bell, Search, User, LogOut, HelpCircle, Shield, CheckCircle2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -15,7 +15,7 @@ interface Notification {
     read: boolean;
 }
 
-export function Topbar() {
+function TopbarContent() {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -258,5 +258,13 @@ export function Topbar() {
                 </div>
             </div>
         </header>
+    );
+}
+
+export function Topbar() {
+    return (
+        <Suspense fallback={<header className="h-20 border-b border-border glass-panel sticky top-0 z-20 px-8 flex items-center justify-between"></header>}>
+            <TopbarContent />
+        </Suspense>
     );
 }
