@@ -32,10 +32,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type SettingsTab = "General" | "Security" | "Notifications" | "Team Members" | "Cloud Sync" | "API Keys" | "Database" | "Appearance";
 
 export default function SettingsPage() {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<SettingsTab>("General");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -515,7 +517,7 @@ export default function SettingsPage() {
                                                         <Key className="w-4 h-4 text-primary" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-bold">{key.name}</p>
+                                                        <p className="text-sm font-bold">{key.name || 'Admin Generated Key'}</p>
                                                         <p className="text-[10px] text-muted-foreground">Owner: {key.userId?.email || 'System'}</p>
                                                     </div>
                                                 </div>
@@ -566,7 +568,7 @@ export default function SettingsPage() {
                                                     <span className="flex items-center gap-1"><Activity className="w-3 h-3" /> {key.monthlyCalls}/{key.monthlyLimit} calls</span>
                                                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Created {new Date(key.createdAt).toLocaleDateString()}</span>
                                                 </div>
-                                                <button className="text-[10px] font-bold text-primary hover:underline">View Analytics</button>
+                                                <button type="button" onClick={() => router.push('/analytics')} className="text-[10px] font-bold text-primary hover:underline">View Analytics</button>
                                             </div>
                                         </div>
                                     ))}

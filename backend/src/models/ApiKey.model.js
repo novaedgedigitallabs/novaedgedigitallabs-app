@@ -7,6 +7,11 @@ const apiKeySchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    name: {
+        type: String,
+        required: true,
+        default: 'API Key'
+    },
     key: {
         type: String,
         required: true,
