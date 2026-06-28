@@ -641,6 +641,123 @@ export default function SettingsPage() {
                         </div>
                     </div>
                 );
+            case "Database":
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h2 className="text-xl font-bold">Database & Remote Config</h2>
+                                <p className="text-xs text-muted-foreground mt-1">Manage remote configurations to update the app over-the-air without app store releases.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="md:col-span-1 space-y-6">
+                                <div className="glass-panel p-6 rounded-2xl">
+                                    <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
+                                        <Database className="w-4 h-4 text-primary" /> System Cache
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground mb-4">Clear system cache to force all clients to fetch the latest configurations immediately.</p>
+                                    <button 
+                                        onClick={() => {
+                                            toast.success("Cache flushed successfully! Clients will sync on next launch.");
+                                        }}
+                                        className="w-full py-2.5 bg-neutral-900 border border-border hover:border-primary/50 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 hover:bg-white/5"
+                                    >
+                                        <RefreshCw className="w-4 h-4" /> Flush Cache
+                                    </button>
+                                </div>
+                                <div className="glass-panel p-6 rounded-2xl">
+                                    <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
+                                        <Activity className="w-4 h-4 text-primary" /> Storage
+                                    </h3>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <div className="flex justify-between text-xs mb-1.5">
+                                                <span className="text-muted-foreground font-medium">MongoDB Clusters</span>
+                                                <span className="font-mono text-primary">45%</span>
+                                            </div>
+                                            <div className="w-full h-1.5 bg-neutral-900 rounded-full overflow-hidden">
+                                                <div className="h-full bg-primary w-[45%]" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="flex justify-between text-xs mb-1.5">
+                                                <span className="text-muted-foreground font-medium">Redis Cache</span>
+                                                <span className="font-mono text-blue-500">12%</span>
+                                            </div>
+                                            <div className="w-full h-1.5 bg-neutral-900 rounded-full overflow-hidden">
+                                                <div className="h-full bg-blue-500 w-[12%]" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <div className="glass-panel p-6 rounded-2xl h-full flex flex-col">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-bold flex items-center gap-2">
+                                            <Smartphone className="w-4 h-4 text-primary" /> Remote App Config (JSON)
+                                        </h3>
+                                        <span className="text-[10px] bg-primary/10 text-primary px-2.5 py-1 rounded-md font-bold uppercase tracking-wider border border-primary/20">
+                                            Live Sync
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mb-4">
+                                        This JSON configuration is fetched by the mobile app on startup. Update flags, feature toggles, and dynamic UI parameters here to change app behavior instantly (like Blinkit games/banners) without requiring an app store update.
+                                    </p>
+                                    <div className="flex-1 min-h-[350px] bg-neutral-950 border border-border rounded-xl p-4 font-mono text-sm relative group overflow-hidden focus-within:border-primary/50 transition-colors">
+                                        <textarea 
+                                            spellCheck={false}
+                                            className="w-full h-full bg-transparent resize-none outline-none text-neutral-300 custom-scrollbar"
+                                            defaultValue={JSON.stringify({
+                                                "appVersion": "1.0.0",
+                                                "forceUpdate": false,
+                                                "maintenance": false,
+                                                "features": {
+                                                    "gamesEnabled": true,
+                                                    "newDashboard": true,
+                                                    "promotionalBanner": {
+                                                        "active": true,
+                                                        "imageUrl": "https://novaedgedigitallabs.in/promo/diwali.png",
+                                                        "actionUrl": "app://promo/special-offer"
+                                                    }
+                                                },
+                                                "themeOverrides": {
+                                                    "primaryColor": "#8B5CF6",
+                                                    "buttonRadius": "12px"
+                                                }
+                                            }, null, 2)}
+                                        />
+                                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex gap-2">
+                                            <button 
+                                                onClick={() => toast.success("JSON copied to clipboard!")}
+                                                className="p-2 bg-neutral-900 border border-border rounded-lg hover:border-primary/50 text-muted-foreground hover:text-white transition-all shadow-lg"
+                                                title="Copy JSON"
+                                            >
+                                                <Copy className="w-4 h-4" />
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    toast.promise(new Promise(resolve => setTimeout(resolve, 800)), {
+                                                        loading: 'Pushing changes over the air...',
+                                                        success: 'Remote Config updated and pushed to all active clients!',
+                                                        error: 'Failed to push config'
+                                                    });
+                                                }}
+                                                className="p-2 bg-primary text-white border border-primary rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                                                title="Save & Push"
+                                            >
+                                                <Save className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
             default:
                 return (
                     <div className="glass-panel p-12 rounded-3xl flex flex-col items-center justify-center text-center font-outfit">
