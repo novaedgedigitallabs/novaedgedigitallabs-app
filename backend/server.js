@@ -87,6 +87,19 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Cron Jobs
+const cron = require('node-cron');
+const syncBlogs = require('./src/utils/syncBlogs');
+
+// Run daily at midnight to sync blogs from RSS feed
+cron.schedule('0 0 * * *', () => {
+    console.log('Running daily blog sync from RSS...');
+    syncBlogs();
+});
+
+// Run once on startup (Optional, but good to fetch immediately)
+setTimeout(syncBlogs, 5000); // Wait 5 seconds after DB connect
+
 app.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
