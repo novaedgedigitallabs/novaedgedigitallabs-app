@@ -10,7 +10,8 @@ import {
     ActivityIndicator, 
     Linking, 
     Alert,
-    RefreshControl
+    RefreshControl,
+    Share
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/colors';
@@ -26,6 +27,11 @@ const HomeScreen: React.FC<any> = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isPosting, setIsPosting] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Comments states
+    const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
+    const [commentText, setCommentText] = useState('');
+    const [isCommenting, setIsCommenting] = useState(false);
 
     const fetchFeed = useCallback(async (showLoader = false) => {
         if (showLoader) setIsLoading(true);
@@ -54,7 +60,7 @@ const HomeScreen: React.FC<any> = ({ navigation }) => {
         if (res && res.success) {
             setNewPostText('');
             setNewPostLink('');
-            // Add new post directly to local state for instant feedback, then fetch feed
+            // Add new post directly to local state for instant feedback
             setPosts((prev) => [res.data, ...prev]);
         } else {
             Alert.alert('Error', res.message || 'Failed to publish post.');
@@ -62,8 +68,7 @@ const HomeScreen: React.FC<any> = ({ navigation }) => {
     };
 
     const handleLikePost = async (postId: string) => {
-        // Optimistic UI update
-        const currentUserId = user?._id || '';
+        const currentUserId = user?.id || '';
         setPosts((prevPosts) => 
             prevPosts.map((post) => {
                 if (post._id === postId) {
@@ -77,8 +82,54 @@ const HomeScreen: React.FC<any> = ({ navigation }) => {
             })
         );
 
-        // API Call in background
         await postApi.likePost(postId);
+    };
+
+    const handleAddComment = async (postId: string) => {
+        if (!commentText.trim()) return;
+
+        setIsCommenting(true);
+        const res = await postApi.addComment(postId, commentText);
+        setIsCommenting(false);
+
+        if (res && res.success) {
+            setCommentText('');
+            setPosts((prevPosts) => 
+                prevPosts.map((post) => post._id === postId ? res.data : post)
+            );
+        } else {
+            Alert.alert('Error', res.message || 'Failed to submit comment.');
+        }
+    };
+
+    const handleSharePost = async (postId: string, content: string, link?: string) => {
+        try {
+            // Optimistic UI update
+            setPosts((prevPosts) => 
+                prevPosts.map((post) => {
+                    if (post._id === postId) {
+                        const currentUserId = user?.id || '';
+                        const shared = post.shares.includes(currentUserId);
+                        const updatedShares = shared 
+                            ? post.shares.filter((id) => id !== currentUserId)
+                            : [...post.shares, currentUserId];
+                        return { ...post, shares: updatedShares };
+                    }
+                    return post;
+                })
+            );
+
+            // Backend Call
+            await postApi.sharePost(postId);
+
+            // Native Share Sheet
+            const shareMessage = link ? `${content}\n\nLink: ${link}` : content;
+            await Share.share({
+                message: shareMessage,
+            });
+        } catch (error) {
+            console.error('Error sharing post:', error);
+        }
     };
 
     const handleOpenLink = async (url: string) => {
@@ -135,10 +186,11 @@ const HomeScreen: React.FC<any> = ({ navigation }) => {
     };
 
     const renderPostItem = ({ item }: { item: Post }) => {
-        const isLiked = item.likes.includes(user?._id || '');
-        const isOwner = item.userId?._id === user?._id;
+        const isLiked = item.likes.includes(user?.id || '');
+        const isOwner = item.userId?._id === user?.id;
         const relativeTime = getRelativeTime(item.createdAt);
         const userInitial = item.userId?.name?.charAt(0) || 'U';
+        const isCommentsExpanded = expandedPostId === item._id;
 
         return (
             <View style={[styles.postCard, COLORS.glass]}>
@@ -167,6 +219,7 @@ const HomeScreen: React.FC<any> = ({ navigation }) => {
                 )}
 
                 <View style={styles.postActions}>
+                    {/* Like Action */}
                     <TouchableOpacity 
                         onPress={() => handleLikePost(item._id)} 
                         style={styles.actionButton}
@@ -181,7 +234,89 @@ const HomeScreen: React.FC<any> = ({ navigation }) => {
                             {item.likes.length}
                         </Text>
                     </TouchableOpacity>
+
+                    {/* Comment Action */}
+                    <TouchableOpacity 
+                        onPress={() => {
+                            setExpandedPostId(isCommentsExpanded ? null : item._id);
+                            setCommentText('');
+                        }} 
+                        style={[styles.actionButton, { marginLeft: 24 }]}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons 
+                            name="chatbubble-outline" 
+                            size={18} 
+                            color={isCommentsExpanded ? COLORS.primary : COLORS.textMuted} 
+                        />
+                        <Text style={[styles.actionText, isCommentsExpanded && { color: COLORS.primary }]}>
+                            {item.comments ? item.comments.length : 0}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {/* Share Action */}
+                    <TouchableOpacity 
+                        onPress={() => handleSharePost(item._id, item.content, item.link)} 
+                        style={[styles.actionButton, { marginLeft: 24 }]}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons 
+                            name="share-social-outline" 
+                            size={18} 
+                            color={COLORS.textMuted} 
+                        />
+                        <Text style={styles.actionText}>
+                            {item.shares ? item.shares.length : 0}
+                        </Text>
+                    </TouchableOpacity>
                 </View>
+
+                {/* Inline Comments Section */}
+                {isCommentsExpanded && (
+                    <View style={styles.commentsSection}>
+                        {item.comments && item.comments.length > 0 && (
+                            <View style={styles.commentsList}>
+                                {item.comments.map((comment) => (
+                                    <View key={comment._id} style={styles.commentItem}>
+                                        <View style={styles.commentHeader}>
+                                            <View style={styles.commentAvatar}>
+                                                <Text style={styles.commentAvatarText}>
+                                                    {comment.userId?.name?.charAt(0) || 'U'}
+                                                </Text>
+                                            </View>
+                                            <View style={styles.commentInfo}>
+                                                <Text style={styles.commentUser}>{comment.userId?.name || 'User'}</Text>
+                                                <Text style={styles.commentTime}>{getRelativeTime(comment.createdAt)}</Text>
+                                            </View>
+                                        </View>
+                                        <Text style={styles.commentContent}>{comment.text}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        )}
+
+                        <View style={styles.addCommentRow}>
+                            <TextInput
+                                style={styles.commentInput}
+                                placeholder="Write a comment..."
+                                placeholderTextColor={COLORS.textMuted}
+                                value={commentText}
+                                onChangeText={setCommentText}
+                            />
+                            <TouchableOpacity 
+                                onPress={() => handleAddComment(item._id)} 
+                                style={[styles.sendCommentButton, !commentText.trim() && { opacity: 0.5 }]}
+                                disabled={!commentText.trim() || isCommenting}
+                            >
+                                {isCommenting ? (
+                                    <ActivityIndicator size="small" color={COLORS.primary} />
+                                ) : (
+                                    <Ionicons name="send" size={18} color={COLORS.primary} />
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
             </View>
         );
     };
@@ -454,6 +589,76 @@ const styles = StyleSheet.create({
         fontSize: 13,
         marginLeft: 6,
         fontWeight: '600',
+    },
+    commentsSection: {
+        marginTop: 15,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255, 255, 255, 0.05)',
+        paddingTop: 12,
+    },
+    commentsList: {
+        marginBottom: 12,
+    },
+    commentItem: {
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+        borderRadius: 12,
+        padding: 10,
+        marginBottom: 8,
+    },
+    commentHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 6,
+    },
+    commentAvatar: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: COLORS.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 8,
+    },
+    commentAvatarText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 11,
+    },
+    commentInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    commentUser: {
+        color: COLORS.white,
+        fontSize: 13,
+        fontWeight: 'bold',
+        marginRight: 6,
+    },
+    commentTime: {
+        color: COLORS.textMuted,
+        fontSize: 11,
+    },
+    commentContent: {
+        color: COLORS.white,
+        fontSize: 13,
+        lineHeight: 18,
+        paddingLeft: 4,
+    },
+    addCommentRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        height: 38,
+    },
+    commentInput: {
+        flex: 1,
+        color: COLORS.white,
+        fontSize: 13,
+    },
+    sendCommentButton: {
+        padding: 4,
     },
     loaderContainer: {
         paddingVertical: 40,
