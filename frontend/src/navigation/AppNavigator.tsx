@@ -3,12 +3,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import HomeNavigator from './HomeNavigator';
-import ToolsNavigator from './ToolsNavigator';
-import ServicesNavigator from './ServicesNavigator';
 import ProfileScreen from '../screens/ProfileScreen';
 import ProfileNavigator from './ProfileNavigator';
 import AuthNavigator from './AuthNavigator';
-import StoreNavigator from './StoreNavigator';
 import MarketplaceNavigator from './MarketplaceNavigator';
 import JobsNavigator from './JobsNavigator';
 import CourseNavigator from './CourseNavigator';
@@ -59,9 +56,6 @@ const TabNavigator = () => {
             <Tab.Screen name="Home" component={HomeNavigator} options={{ title: 'NovaEdge' }} />
             <Tab.Screen name="Marketplace" component={MarketplaceNavigator} />
             <Tab.Screen name="Jobs" component={JobsNavigator} />
-            <Tab.Screen name="Store" component={StoreNavigator} />
-            <Tab.Screen name="Tools" component={ToolsNavigator} />
-            <Tab.Screen name="Services" component={ServicesNavigator} />
             <Tab.Screen name="Academy" component={CourseNavigator} />
             <Tab.Screen name="Profile" component={ProfileNavigator} />
         </Tab.Navigator>

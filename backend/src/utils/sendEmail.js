@@ -15,9 +15,11 @@ const sendEmail = async (options) => {
         const mailOptions = {
             from: `${process.env.COMPANY_NAME || 'NovaEdge'} <${process.env.EMAIL_USER}>`,
             to: options.email,
+            cc: options.cc,
             subject: options.subject,
             text: options.message,
             html: options.html, // Optional HTML version
+            attachments: options.attachments // Optional attachments (e.g. inline images)
         };
 
         // Send the email

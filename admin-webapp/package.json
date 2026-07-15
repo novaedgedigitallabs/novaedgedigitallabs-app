@@ -31,5 +31,8 @@
   },
   "optionalDependencies": {
     "@next/swc-linux-x64-gnu": "^16.2.4"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
   }
 }

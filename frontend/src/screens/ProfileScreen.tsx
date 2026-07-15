@@ -67,6 +67,31 @@ const ProfileScreen = ({ navigation }: any) => {
                 </View>
 
                 <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Services & Tools</Text>
+                    <MenuItem
+                        icon="apps-outline"
+                        title="Utility Tools"
+                        subtitle="Access GST, EMI calculators and more"
+                        onPress={() => navigation.navigate('Tools')}
+                        color={COLORS.primary}
+                    />
+                    <MenuItem
+                        icon="cart-outline"
+                        title="Digital Store"
+                        subtitle="Buy premium assets and products"
+                        onPress={() => navigation.navigate('Store')}
+                        color={COLORS.secondary || '#3b82f6'}
+                    />
+                    <MenuItem
+                        icon="business-outline"
+                        title="Studio Services"
+                        subtitle="Request web/app development and quotes"
+                        onPress={() => navigation.navigate('Services')}
+                        color={COLORS.accent || '#10b981'}
+                    />
+                </View>
+
+                <View style={styles.section}>
                     <Text style={styles.sectionTitle}>My Workspace</Text>
                     <MenuItem
                         icon="briefcase-outline"

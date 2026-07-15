@@ -88,10 +88,34 @@ exports.verifyPayment = async (req, res, next) => {
         );
 
         // Update User plan details
-        await User.findByIdAndUpdate(req.user.id, {
+        const user = await User.findByIdAndUpdate(req.user.id, {
             plan: plan,
             planExpiry: endDate
-        });
+        }, { new: true });
+
+        // Send Email Invoice
+        try {
+            const sendInvoice = require('../utils/sendInvoice');
+            await sendInvoice({
+                user: {
+                    name: user.name,
+                    email: user.email
+                },
+                purchaseType: 'subscription',
+                itemDetails: {
+                    name: plan,
+                    price: subscription.amount,
+                    billingCycle: billingCycle
+                },
+                paymentDetails: {
+                    orderId: razorpayOrderId,
+                    paymentId: razorpayPaymentId,
+                    date: subscription.startDate
+                }
+            });
+        } catch (mailError) {
+            console.error('Failed to send invoice email:', mailError);
+        }
 
         res.status(200).json({
             success: true,
@@ -191,10 +215,34 @@ exports.handleWebhook = async (req, res, next) => {
                 await subscription.save();
 
                 // Update User
-                await User.findByIdAndUpdate(subscription.userId, {
+                const user = await User.findByIdAndUpdate(subscription.userId, {
                     plan: subscription.plan,
                     planExpiry: endDate
-                });
+                }, { new: true });
+
+                // Send Email Invoice
+                try {
+                    const sendInvoice = require('../utils/sendInvoice');
+                    await sendInvoice({
+                        user: {
+                            name: user.name,
+                            email: user.email
+                        },
+                        purchaseType: 'subscription',
+                        itemDetails: {
+                            name: subscription.plan,
+                            price: subscription.amount,
+                            billingCycle: subscription.billingCycle
+                        },
+                        paymentDetails: {
+                            orderId: orderId,
+                            paymentId: paymentId,
+                            date: subscription.startDate
+                        }
+                    });
+                } catch (mailError) {
+                    console.error('Failed to send webhook invoice email:', mailError);
+                }
             }
         } else if (event === 'subscription.cancelled') {
             // Handle Razorpay specific subscription cancellation if needed

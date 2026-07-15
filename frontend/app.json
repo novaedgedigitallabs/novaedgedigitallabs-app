@@ -30,7 +30,8 @@
     "plugins": [
       "expo-video",
       "./plugins/withHermesFix",
-      "expo-font"
+      "expo-font",
+      "expo-sharing"
     ],
     "extra": {
       "eas": {

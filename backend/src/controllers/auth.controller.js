@@ -78,6 +78,20 @@ exports.register = async (req, res, next) => {
 
         const token = generateToken(user);
 
+        // Send Welcome Email
+        try {
+            const sendWelcomeEmail = require('../utils/sendWelcomeEmail');
+            await sendWelcomeEmail({
+                user: {
+                    name: user.name,
+                    email: user.email,
+                    referralCode: user.referralCode
+                }
+            });
+        } catch (mailError) {
+            console.error('Failed to send welcome email:', mailError);
+        }
+
         res.status(201).json({
             success: true,
             token,

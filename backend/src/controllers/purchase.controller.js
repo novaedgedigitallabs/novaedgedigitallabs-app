@@ -71,7 +71,34 @@ exports.verifyPayment = async (req, res) => {
             );
 
             // Increment sales count on product
-            await Product.findByIdAndUpdate(purchase.productId, { $inc: { totalSales: 1 } });
+            const product = await Product.findByIdAndUpdate(purchase.productId, { $inc: { totalSales: 1 } }, { new: true });
+
+            // Fetch User
+            const User = require('../models/User.model');
+            const user = await User.findById(purchase.userId);
+
+            // Send Email Invoice
+            try {
+                const sendInvoice = require('../utils/sendInvoice');
+                await sendInvoice({
+                    user: {
+                        name: user.name,
+                        email: user.email
+                    },
+                    purchaseType: 'product',
+                    itemDetails: {
+                        name: product.name,
+                        price: purchase.amount
+                    },
+                    paymentDetails: {
+                        orderId: razorpay_order_id,
+                        paymentId: razorpay_payment_id,
+                        date: purchase.updatedAt
+                    }
+                });
+            } catch (mailError) {
+                console.error('Failed to send product invoice email:', mailError);
+            }
 
             res.status(200).json({ success: true, message: 'Payment verified successfully' });
         } else {

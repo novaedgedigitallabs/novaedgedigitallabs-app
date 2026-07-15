@@ -13,6 +13,9 @@ import ApiDashboardScreen from '../screens/ApiDashboardScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import AdminUsersScreen from '../screens/AdminUsersScreen';
 import MyWorkspaceScreen from '../screens/MyWorkspaceScreen';
+import StoreNavigator from './StoreNavigator';
+import ToolsNavigator from './ToolsNavigator';
+import ServicesNavigator from './ServicesNavigator';
 import { COLORS } from '../constants/colors';
 
 const Stack = createStackNavigator();
@@ -26,6 +29,9 @@ const ProfileNavigator = () => {
             }}
         >
             <Stack.Screen name="ProfileMain" component={ProfileScreen} />
+            <Stack.Screen name="Store" component={StoreNavigator} />
+            <Stack.Screen name="Tools" component={ToolsNavigator} />
+            <Stack.Screen name="Services" component={ServicesNavigator} />
             <Stack.Screen name="MyWorkspace" component={MyWorkspaceScreen} />
             <Stack.Screen name="Subscription" component={SubscriptionScreen} />
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
